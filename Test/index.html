@@ -1,0 +1,43 @@
+<html>
+	<head></head>
+	<body>
+		<script src="wap-built.js"></script>
+	
+		<script>
+			
+			var c = new wap();
+			var cc = new compiler();
+
+			c.RAM[0x00] = 3;
+			c.RAM[0x01] = 5;
+			
+			
+			c.ROM = "1007102001ff210f0";
+					 
+			
+			function run()
+			{
+				c.RUNNING = true;
+				var cycles = 0;
+			
+				while (c.RUNNING && cycles < 50000)
+				{
+					c.execute(); 
+					cycles++;
+				}
+				
+				
+			}
+			
+			function step(x)
+			{
+				for (i = 0; i < x; i++) {
+					c.execute();
+				}
+				console.log(c);
+			}
+			
+		</script>
+	
+	</body>
+</html>

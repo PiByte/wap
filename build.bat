@@ -1,0 +1,1 @@
+tsc --outfile wap-built.js wap.ts
