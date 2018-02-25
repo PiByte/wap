@@ -196,11 +196,30 @@ var compiler = /** @class */ (function () {
         this.address_prefix = "$";
         this.comment_prefix = ";";
     }
-    compiler.prototype.compile_error = function (reason) {
-        console.error("Compilation error! (" + reason + ")");
+    compiler.prototype.log = function (reason, location, type) {
+        if (location === void 0) { location = "0"; }
+        if (type === void 0) { type = 3; }
+        switch (type) {
+            case 1://Error
+                console.error("Compilation error at 0x" + location.toUpperCase() + " (" + reason + ")");
+                break;
+            case 2://Warning
+                console.warn("Warning! " + reason + " (0x" + location.toUpperCase() + ")");
+                break;
+            case 3://Info
+                console.log(reason);
+                break;
+        }
     };
     compiler.prototype.compile = function () {
         var lines = this.file.split(/\r?\n/); //Split every newline
+        // Remove empty space
+        for (var k = 0; k <= lines.length; k++) {
+            if (lines[k] == "") {
+                // If its whitespace, remove it! >:)
+                lines.splice(k, 1);
+            }
+        }
         for (var i = 0; i < lines.length; i++) {
             var opcode = "";
             // Get instruction
@@ -208,31 +227,34 @@ var compiler = /** @class */ (function () {
             for (var inst = 0; inst < this.insts.length; inst++) {
                 if (lines[i].indexOf(this.insts[inst]) !== -1) {
                     opcode += inst.toString(16); // Append instruction as hex string
+                    break;
                 }
-            }
-            // Check if instruction requires an operand, and adds it.
-            for (var j = 0; i < this.no_operand.length; i++) {
+            } //TODO: Throw error if instruction doesnt exist!
+            //Check if instruction requires operand
+            var requiresOperand = false;
+            for (var j = 0; j < this.no_operand.length; j++) {
                 if (opcode != this.no_operand[j]) {
-                    // If it requires operand
-                    if (lines[i].indexOf(this.address_prefix)) {
-                        var numbers = lines[i].substring(lines[i].indexOf(this.address_prefix) + 1, lines[i].indexOf(this.address_prefix) + 3);
-                        numbers.split("").reverse().join(); //Reverse string
-                        opcode += numbers; // Add numbers
-                    }
-                    else {
-                        this.compile_error("Missing operand or " + this.address_prefix + " symbol");
-                        return;
-                    }
-                }
-                else {
-                    // If it doesn't
+                    requiresOperand = true;
+                    break;
                 }
             }
-            //Comments
+            // Add operand
+            if (requiresOperand) {
+                var numbers = lines[i].substr(lines[i].indexOf(this.address_prefix) + 1, 2); // Get operand
+                numbers = numbers.split("").reverse().join(""); // Reverse
+                opcode += numbers; // Add numbers
+            }
+            else {
+                console.log(lines[i]);
+                if (lines[i].indexOf(this.address_prefix) !== -1) {
+                    this.log("No operand required!", i.toString(), 2); // Give warning
+                }
+            }
             // Add final opcode to binary string
             this.binary += opcode;
         }
         console.log(this.binary);
+        this.log("Compilation complete!");
     };
     return compiler;
 }());

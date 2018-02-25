@@ -223,19 +223,42 @@ class compiler
 
     }
 
-    private compile_error(reason: string): void
+    private log(reason: string, location: string = "0", type: number = 3): void
     {
-        console.error("Compilation error! (" + reason + ")");
+        switch (type)
+        {
+            case 1: //Error
+                console.error("Compilation error at 0x" + location.toUpperCase() + " (" + reason + ")");
+            break;
+            case 2: //Warning
+                console.warn("Warning! " + reason + " (0x" + location.toUpperCase() + ")");
+            break;
+            case 3: //Info
+                console.log(reason);
+            break;
+        }
     }
 
     public compile(): void
     {
         let lines: Array<string> = this.file.split(/\r?\n/); //Split every newline
 
+        // Remove empty space
+        for (let k: number = 0; k <= lines.length; k++)
+        {
+            if (lines[k] == "")
+            {
+                // If its whitespace, remove it! >:)
+                lines.splice(k, 1);
+            }
+        }
+
         for (let i: number = 0; i < lines.length; i++)
         {
             let opcode: string = "";
             // Get instruction
+
+
 
             // Check if instruction is contained, and if so, it will add it
             for (let inst: number = 0; inst < this.insts.length; inst++)
@@ -243,44 +266,39 @@ class compiler
                 if (lines[i].indexOf(this.insts[inst]) !== -1)
                 {
                     opcode += inst.toString(16); // Append instruction as hex string
+                    break;
                 }
-            }
+            } //TODO: Throw error if instruction doesnt exist!
 
-            // Check if instruction requires an operand, and adds it.
-            for (let j: number = 0; i < this.no_operand.length; i++)
+            //Check if instruction requires operand
+            let requiresOperand: boolean = false;
+
+            for (let j: number = 0; j < this.no_operand.length; j++)
             {
-                if (opcode != this.no_operand[j])
-                {
-                    // If it requires operand
-
-                    if (lines[i].indexOf(this.address_prefix))
-                    {
-                        let numbers: string = lines[i].substring(lines[i].indexOf(this.address_prefix) + 1, lines[i].indexOf(this.address_prefix) + 3);
-                        numbers.split("").reverse().join(); //Reverse string
-                        opcode += numbers; // Add numbers
-                    }
-                    else
-                    {
-                        this.compile_error("Missing operand or " + this.address_prefix + " symbol");
-                        return;
-                    }
-
-                }
-                else
-                {
-                    // If it doesn't
-
-                }
+                if (opcode != this.no_operand[j]) { requiresOperand = true; break; }
             }
 
-            //Comments
-
+            // Add operand
+            if (requiresOperand)
+            {
+                let numbers: string = lines[i].substr(lines[i].indexOf(this.address_prefix) + 1, 2); // Get operand
+                numbers = numbers.split("").reverse().join(""); // Reverse
+                opcode += numbers; // Add numbers
+            }
+            else
+            {
+                console.log(lines[i]);
+                if (lines[i].indexOf(this.address_prefix) !== -1)
+                {
+                    this.log("No operand required!", i.toString(), 2); // Give warning
+                }
+            }
 
             // Add final opcode to binary string
             this.binary += opcode;
         }
 
         console.log(this.binary);
-
-    }
+        this.log("Compilation complete!");
+    }    
 }
