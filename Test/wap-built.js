@@ -189,7 +189,7 @@ var wap = /** @class */ (function () {
 }());
 var compiler = /** @class */ (function () {
     function compiler() {
-        this.file = "\n        lda $00 ; Load first number\n        add $01 ; Add\n        sta $00 ; Save number\n        lda $ff ;        sta $01 ; Cleanup\n        clf     ;/\n        hlt     ; Halt computer\n    "; //Multiline string
+        this.file = "\n        lda $00 ; Load first number\n        add $01 ; Add\n        sta $00 ; Save number\n        lda $ff ;\n        sta $01 ; Cleanup\n        clf     ;/\n        hlt     ; Halt computer\n    "; //Multiline string
         this.binary = "";
         this.insts = ["hlt", "lda", "sta", "jmp", "spc", "and", "or", "add", "sub", "jnz", "cmp", "jnd", "jnc", "rol", "ror", "clf"];
         this.no_operand = ["0", "d", "e", "f"];
@@ -212,10 +212,14 @@ var compiler = /** @class */ (function () {
         }
     };
     compiler.prototype.compile = function () {
+        //Reset binary
+        this.binary = "";
+        //Log original file
+        this.log(this.file);
         var lines = this.file.split(/\r?\n/); //Split every newline
         // Remove empty space
         for (var k = 0; k <= lines.length; k++) {
-            if (lines[k] == "") {
+            if (lines[k] == "" || !/\S/g.test(lines[k])) {
                 // If its whitespace, remove it! >:)
                 lines.splice(k, 1);
             }
@@ -231,10 +235,10 @@ var compiler = /** @class */ (function () {
                 }
             } //TODO: Throw error if instruction doesnt exist!
             //Check if instruction requires operand
-            var requiresOperand = false;
+            var requiresOperand = true;
             for (var j = 0; j < this.no_operand.length; j++) {
-                if (opcode != this.no_operand[j]) {
-                    requiresOperand = true;
+                if (opcode == this.no_operand[j]) {
+                    requiresOperand = false;
                     break;
                 }
             }
@@ -245,7 +249,6 @@ var compiler = /** @class */ (function () {
                 opcode += numbers; // Add numbers
             }
             else {
-                console.log(lines[i]);
                 if (lines[i].indexOf(this.address_prefix) !== -1) {
                     this.log("No operand required!", i.toString(), 2); // Give warning
                 }
@@ -253,8 +256,8 @@ var compiler = /** @class */ (function () {
             // Add final opcode to binary string
             this.binary += opcode;
         }
-        console.log(this.binary);
         this.log("Compilation complete!");
+        return this.binary;
     };
     return compiler;
 }());
