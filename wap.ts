@@ -205,7 +205,7 @@ class compiler
         lda $00 ; Load first number
         add $01 ; Add
         sta $00 ; Save number
-        lda $ff ;\
+        lda $ff ;
         sta $01 ; Cleanup
         clf     ;/
         hlt     ; Halt computer
@@ -239,14 +239,20 @@ class compiler
         }
     }
 
-    public compile(): void
+    public compile(): string
     {
+        //Reset binary
+        this.binary = "";
+
+        //Log original file
+        this.log(this.file);
+
         let lines: Array<string> = this.file.split(/\r?\n/); //Split every newline
 
         // Remove empty space
         for (let k: number = 0; k <= lines.length; k++)
         {
-            if (lines[k] == "")
+            if (lines[k] == "" || !/\S/g.test(lines[k])) // check for empty lines & whitespace
             {
                 // If its whitespace, remove it! >:)
                 lines.splice(k, 1);
@@ -271,11 +277,10 @@ class compiler
             } //TODO: Throw error if instruction doesnt exist!
 
             //Check if instruction requires operand
-            let requiresOperand: boolean = false;
-
+            let requiresOperand: boolean = true;
             for (let j: number = 0; j < this.no_operand.length; j++)
             {
-                if (opcode != this.no_operand[j]) { requiresOperand = true; break; }
+                if (opcode == this.no_operand[j]) { requiresOperand = false; break; }
             }
 
             // Add operand
@@ -287,7 +292,6 @@ class compiler
             }
             else
             {
-                console.log(lines[i]);
                 if (lines[i].indexOf(this.address_prefix) !== -1)
                 {
                     this.log("No operand required!", i.toString(), 2); // Give warning
@@ -298,7 +302,8 @@ class compiler
             this.binary += opcode;
         }
 
-        console.log(this.binary);
         this.log("Compilation complete!");
+
+        return this.binary;        
     }    
 }

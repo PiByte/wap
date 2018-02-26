@@ -1,0 +1,74 @@
+<html>
+	<head></head>
+	<body>
+		<script src="wap-built.js"></script>
+	
+		<script>
+			
+			var c = new wap();
+			var cc = new compiler();
+
+			/*
+			lda $00 ; 
+and $00 ; load 1 into 03
+sta $02 ;
+
+lda $03
+add $00 ; add
+sta $03
+
+lda $01
+sub $02 ; sub
+sta $01
+
+lda $01 ; test
+cmp $ff
+
+jnz $00 ; jump back if zero isn't set
+
+lda $03 ; move final value
+sta $00
+
+lda $ff ;cleanup
+sta $01
+sta $02
+sta $03
+clf
+
+hlt 	;halt HOLY SHIT THIS COMPILES AND WORKS
+			*/
+			
+			
+			c.RAM[0x00] = 3;
+			c.RAM[0x01] = 23;
+			
+			
+			c.ROM = "100500220130700230110820210110aff9001302001ff210220230f0";
+				   
+			
+			function run()
+			{
+				c.RUNNING = true;
+				var cycles = 0;
+			
+				while (c.RUNNING && cycles < 50000)
+				{
+					c.execute(); 
+					cycles++;
+				}
+				
+				
+			}
+			
+			function step(x)
+			{
+				for (i = 0; i < x; i++) {
+					c.execute();
+				}
+				console.log(c);
+			}
+			
+		</script>
+	
+	</body>
+</html>
