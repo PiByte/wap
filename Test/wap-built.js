@@ -1,3 +1,11 @@
+/*
+Todo:
+Finish compiler
+Finish emulator (Mostly touch-ups)
+Turn into library
+Create editor
+Create UI
+*/
 var wap = /** @class */ (function () {
     function wap() {
         // Init computer by filling RAM with zeros.
@@ -10,7 +18,7 @@ var wap = /** @class */ (function () {
         this.ZERO = false;
         this.DATA = false;
         this.RUNNING = false;
-        this.insts = ["hlt", "lda", "sta", "jmp", "spc", "and", "or", "add", "sub", "jnz", "cmp", "jnd", "jnc", "rol", "ror", "clf"];
+        this.insts = ["hlt", "lda", "sta", "jmp", "spc", "and", "or", "add", "sub", "jnz", "cmp", "jnd", "jnc", "rol", "ror", "clf"]; // remove later
         for (var i = 0; i < this.RAM.length; i++) {
             this.RAM[i] = 0;
         } // LOL
@@ -189,10 +197,8 @@ var wap = /** @class */ (function () {
 }());
 var compiler = /** @class */ (function () {
     function compiler() {
-        this.file = "\n        lda $00 ; Load first number\n        add $01 ; Add\n        sta $00 ; Save number\n        lda $ff ;\n        sta $01 ; Cleanup\n        clf     ;/\n        hlt     ; Halt computer\n    "; //Multiline string
-        this.binary = "";
         this.insts = ["hlt", "lda", "sta", "jmp", "spc", "and", "or", "add", "sub", "jnz", "cmp", "jnd", "jnc", "rol", "ror", "clf"];
-        this.no_operand = ["0", "d", "e", "f"];
+        this.no_operand = ["0", "d", "e", "f"]; // commands that dont require an operand
         this.address_prefix = "$";
         this.comment_prefix = ";";
     }
@@ -204,21 +210,26 @@ var compiler = /** @class */ (function () {
                 console.error("Compilation error at 0x" + location.toUpperCase() + " (" + reason + ")");
                 break;
             case 2://Warning
-                console.warn("Warning! " + reason + " (0x" + location.toUpperCase() + ")");
+                console.warn("Compilation warning! " + reason + " (0x" + location.toUpperCase() + ")");
                 break;
             case 3://Info
                 console.log(reason);
                 break;
         }
     };
-    compiler.prototype.compile = function () {
+    compiler.prototype.compile = function (file) {
         //Reset binary
-        this.binary = "";
-        //Log original file
-        this.log(this.file);
-        var lines = this.file.split(/\r?\n/); //Split every newline
-        // Remove empty space
-        for (var k = 0; k <= lines.length; k++) {
+        var binary = "";
+        var lines = file.split(/\r?\n/); //Split every newline
+        // Remove comments
+        for (var k = 0; k < lines.length; k++) {
+            if (lines[k].indexOf(this.comment_prefix) !== -1) {
+                // Comment found, time to exterminate!
+                lines[k] = lines[k].replace(/;(.*)/g, "");
+            }
+        }
+        //Delete whitespace
+        for (var k = lines.length; k >= 0; k--) {
             if (lines[k] == "" || !/\S/g.test(lines[k])) {
                 // If its whitespace, remove it! >:)
                 lines.splice(k, 1);
@@ -233,7 +244,11 @@ var compiler = /** @class */ (function () {
                     opcode += inst.toString(16); // Append instruction as hex string
                     break;
                 }
-            } //TODO: Throw error if instruction doesnt exist!
+            }
+            if (opcode == "") {
+                this.log("Opcode not found!", i.toString(16), 1);
+                return "x";
+            }
             //Check if instruction requires operand
             var requiresOperand = true;
             for (var j = 0; j < this.no_operand.length; j++) {
@@ -244,20 +259,26 @@ var compiler = /** @class */ (function () {
             }
             // Add operand
             if (requiresOperand) {
-                var numbers = lines[i].substr(lines[i].indexOf(this.address_prefix) + 1, 2); // Get operand
-                numbers = numbers.split("").reverse().join(""); // Reverse
-                opcode += numbers; // Add numbers
+                if (lines[i].indexOf(this.address_prefix) !== -1) {
+                    var numbers = lines[i].substr(lines[i].indexOf(this.address_prefix) + 1, 2); // Get operand
+                    numbers = numbers.split("").reverse().join(""); // Reverse
+                    opcode += numbers; // Add numbers
+                }
+                else {
+                    this.log("No operand found!", i.toString(16), 1);
+                    return "x";
+                }
             }
             else {
                 if (lines[i].indexOf(this.address_prefix) !== -1) {
-                    this.log("No operand required!", i.toString(), 2); // Give warning
+                    this.log("No operand required!", i.toString(16), 2); // Give warning
                 }
             }
             // Add final opcode to binary string
-            this.binary += opcode;
+            binary += opcode;
         }
         this.log("Compilation complete!");
-        return this.binary;
+        return binary;
     };
     return compiler;
 }());

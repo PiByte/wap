@@ -8,43 +8,47 @@
 			var c = new wap();
 			var cc = new compiler();
 
-			/*
-			lda $00 ; 
-and $00 ; load 1 into 03
-sta $02 ;
+/*
 
-lda $03
-add $00 ; add
-sta $03
 
-lda $01
-sub $02 ; sub
-sta $01
+; Load 1 into $03
+lda $00 ; Get random value over 0 
+and $00 ; Preform and gate with same value, will always return 1
+sta $02 ; Store 1 in $02
 
-lda $01 ; test
-cmp $ff
+; Adding and subtracting
+lda $03 ; Load value from working storage
+add $00 ; Add first argument with value found in local storage
+sta $03 ; Store in working storage
+lda $01 ; Load second argument
+sub $02 ; Decrement second argument
+sta $01 ; Store
 
-jnz $00 ; jump back if zero isn't set
+; Checking...
+cmp $ff ; Compare second argument, to determine if operation is complete
+jnz $09 ; Jump back if zero isn't set
 
-lda $03 ; move final value
-sta $00
+; Cleanup
+lda $03 ; Load final value
+sta $00 ; Store at first location in RAM
+lda $ff ; Load 0
+sta $01 ; v
+sta $02 ; Clear RAM
+sta $03 ; ^
+clf		; Clear flags
 
-lda $ff ;cleanup
-sta $01
-sta $02
-sta $03
-clf
+; Halt
+hlt 	; Halt computer
 
-hlt 	;halt HOLY SHIT THIS COMPILES AND WORKS
-			*/
+
+*/
 			
 			
 			c.RAM[0x00] = 3;
 			c.RAM[0x01] = 23;
 			
 			
-			c.ROM = "100500220130700230110820210110aff9001302001ff210220230f0";
-				   
+			c.ROM = "0";
 			
 			function run()
 			{

@@ -1,3 +1,15 @@
+/* wap */
+/* Jacob Johansson 2018 */
+
+/*
+Todo:
+Finish compiler                         [x]
+Finish emulator                         [ ]
+Touch ups                               [ ]
+Turn into library                       [ ]
+Create editor                           [ ]
+Create UI                               [ ]
+*/
 class wap
 {
     private RAM: Array<number> = new Array(256);
@@ -14,7 +26,7 @@ class wap
 
     private RUNNING: boolean = false;
 
-    private insts: Array<string> = ["hlt", "lda", "sta", "jmp", "spc", "and", "or", "add", "sub", "jnz", "cmp", "jnd", "jnc", "rol", "ror", "clf"];
+    private insts: Array<string> = ["hlt", "lda", "sta", "jmp", "spc", "and", "or", "add", "sub", "jnz", "cmp", "jnd", "jnc", "rol", "ror", "clf"]; // remove later
 
     public constructor()
     {
@@ -201,27 +213,11 @@ class wap
 
 class compiler
 {
-    private file: string = `
-        lda $00 ; Load first number
-        add $01 ; Add
-        sta $00 ; Save number
-        lda $ff ;
-        sta $01 ; Cleanup
-        clf     ;/
-        hlt     ; Halt computer
-    `; //Multiline string
-
-    private binary: string = "";
     private insts: Array<string> = ["hlt", "lda", "sta", "jmp", "spc", "and", "or", "add", "sub", "jnz", "cmp", "jnd", "jnc", "rol", "ror", "clf"];    
-    private no_operand: Array<string> = ["0", "d", "e", "f"];
+    private no_operand: Array<string> = ["0", "d", "e", "f"]; // commands that dont require an operand
     
     private address_prefix: string = "$";
     private comment_prefix: string = ";";
-
-    public constructor()
-    {
-
-    }
 
     private log(reason: string, location: string = "0", type: number = 3): void
     {
@@ -231,7 +227,7 @@ class compiler
                 console.error("Compilation error at 0x" + location.toUpperCase() + " (" + reason + ")");
             break;
             case 2: //Warning
-                console.warn("Warning! " + reason + " (0x" + location.toUpperCase() + ")");
+                console.warn("Compilation warning! " + reason + " (0x" + location.toUpperCase() + ")");
             break;
             case 3: //Info
                 console.log(reason);
@@ -239,18 +235,25 @@ class compiler
         }
     }
 
-    public compile(): string
+    public compile(file: string): string
     {
         //Reset binary
-        this.binary = "";
+        let binary: string = "";
 
-        //Log original file
-        this.log(this.file);
+        let lines: Array<string> = file.split(/\r?\n/); //Split every newline
 
-        let lines: Array<string> = this.file.split(/\r?\n/); //Split every newline
+        // Remove comments
+        for (let k: number = 0; k < lines.length; k++)
+        {
+            if (lines[k].indexOf(this.comment_prefix) !== -1)
+            {
+                // Comment found, time to exterminate!
+                lines[k] = lines[k].replace(/;(.*)/g, "");
+            }
+        }
 
-        // Remove empty space
-        for (let k: number = 0; k <= lines.length; k++)
+        //Delete whitespace
+        for (let k: number = lines.length; k >= 0; k--)
         {
             if (lines[k] == "" || !/\S/g.test(lines[k])) // check for empty lines & whitespace
             {
@@ -264,8 +267,6 @@ class compiler
             let opcode: string = "";
             // Get instruction
 
-
-
             // Check if instruction is contained, and if so, it will add it
             for (let inst: number = 0; inst < this.insts.length; inst++)
             {
@@ -274,7 +275,13 @@ class compiler
                     opcode += inst.toString(16); // Append instruction as hex string
                     break;
                 }
-            } //TODO: Throw error if instruction doesnt exist!
+            }
+
+            if (opcode == "") //If opcode doesn't exist, thorw error!
+            {
+                this.log("Opcode not found!", i.toString(16), 1);
+                return "error";
+            }
 
             //Check if instruction requires operand
             let requiresOperand: boolean = true;
@@ -286,24 +293,32 @@ class compiler
             // Add operand
             if (requiresOperand)
             {
-                let numbers: string = lines[i].substr(lines[i].indexOf(this.address_prefix) + 1, 2); // Get operand
-                numbers = numbers.split("").reverse().join(""); // Reverse
-                opcode += numbers; // Add numbers
+                if (lines[i].indexOf(this.address_prefix) !== -1)
+                {
+                    let numbers: string = lines[i].substr(lines[i].indexOf(this.address_prefix) + 1, 2); // Get operand
+                    numbers = numbers.split("").reverse().join(""); // Reverse
+                    opcode += numbers; // Add numbers
+                }
+                else
+                {
+                    this.log("No operand found!", i.toString(16), 1);
+                    return "error";
+                }
             }
             else
             {
                 if (lines[i].indexOf(this.address_prefix) !== -1)
                 {
-                    this.log("No operand required!", i.toString(), 2); // Give warning
+                    this.log("No operand required!", i.toString(16), 2); // Give warning
                 }
             }
 
             // Add final opcode to binary string
-            this.binary += opcode;
+            binary += opcode;
         }
 
         this.log("Compilation complete!");
 
-        return this.binary;        
+        return binary;        
     }    
 }
