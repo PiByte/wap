@@ -1,10 +1,13 @@
+/* wap */
+/* Jacob Johansson 2018 */
 /*
 Todo:
-Finish compiler
-Finish emulator (Mostly touch-ups)
-Turn into library
-Create editor
-Create UI
+Finish compiler                         [x]
+Finish emulator                         [ ]
+Touch ups                               [ ]
+Turn into library                       [ ]
+Create editor                           [ ]
+Create UI                               [ ]
 */
 var wap = /** @class */ (function () {
     function wap() {
@@ -247,7 +250,7 @@ var compiler = /** @class */ (function () {
             }
             if (opcode == "") {
                 this.log("Opcode not found!", i.toString(16), 1);
-                return "x";
+                return "error";
             }
             //Check if instruction requires operand
             var requiresOperand = true;
@@ -266,7 +269,7 @@ var compiler = /** @class */ (function () {
                 }
                 else {
                     this.log("No operand found!", i.toString(16), 1);
-                    return "x";
+                    return "error";
                 }
             }
             else {
