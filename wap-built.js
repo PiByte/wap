@@ -301,8 +301,7 @@ var disassembler = (function () {
         this.RUNNING = true;
         var jump = 0;
         for (var i = 0; i < binary.length; i++) {
-            var ass = parseInt("0x" + binary[i]);
-            if (isNaN(ass))
+            if (isNaN(parseInt("0x" + binary[i])))
                 return "Not a number! (0x" + i.toString(16).toUpperCase() + ")";
         }
         while (this.RUNNING) {

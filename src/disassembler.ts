@@ -34,6 +34,12 @@ class disassembler
 
         let jump: number = 0;
 
+        // Check if any unwanted letters have been thrown in
+        for (let i = 0; i < binary.length; i++) {
+            if (isNaN(parseInt("0x" + binary[i]))) // )))))))))))))))))))))))))))))))))
+                return "Not a number! (0x" + i.toString(16).toUpperCase() + ")";
+        }
+
         while (this.RUNNING)
         {
             jump = 3;
@@ -50,16 +56,18 @@ class disassembler
                 } 
             }
 
-
             // TODO: check for errors, like if required operand is missing
             file += this.insts[parseInt("0x" + binary[this.PC])];
             
             if (require_operand)
-                file += " " + this.address_prefix + binary[this.PC + 2] + binary[this.PC + 1]; // get operand
+                if (binary[this.PC + 1] == undefined || binary[this.PC + 2] == undefined) // Check if operand exists (also ugly code)
+                    return "Missing operand!";
+                else
+                    file += " " + this.address_prefix + binary[this.PC + 2] + binary[this.PC + 1]; // get operand
 
             
             //Check if end of file
-            if (binary[this.PC + 1] === undefined)
+            if (binary[this.PC + jump] === undefined)
                 this.RUNNING = false;
 
             file += "\n" //Newline
