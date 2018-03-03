@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "removeComments": true,
+        "outDir": "test",
+        "outFile": "wap-built.js"    
+    },
+
+    "files": [
+        "src/runtime.ts",
+        "src/compiler.ts"
+    ]
+}

@@ -1,0 +1,10 @@
+wap
+Jacob Johansson 2018
+
+Todo:
+Finish compiler                         [x]
+Finish emulator                         [ ]
+Touch ups                               [ ]
+Turn into library                       [ ]
+Create editor                           [ ]
+Create UI                               [ ]
