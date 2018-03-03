@@ -43,12 +43,27 @@ class wap
     private halt(reason: string = ""): void
     {
         this.RUNNING = false;
-        if (reason)
-            reason = " (" + reason + ")"
-        
-        console.log("Computer halted at $0x" + this.PC.toString(16).toUpperCase() + reason);
 
+        this.log(reason, this.PC.toString(16).toUpperCase(), 1);
+
+        //console.log
         this.PC = 0x00;
+    }
+
+    private log(reason: string, location: string = "0", type: number = 3): void
+    {
+        switch (type)
+        {
+            case 1: //Error
+                console.error("Error! 0x" + location.toUpperCase() + " (" + reason + ")");
+            break;
+            case 2: //Warning
+                console.warn("Warning! 0x" + reason + " (0x" + location.toUpperCase() + ")");
+            break;
+            case 3: //Info
+                console.log(reason);
+            break;
+        }
     }
 
     public execute(): void
@@ -71,7 +86,7 @@ class wap
             break;
             case "3":
                 // jump
-                console.log("Jumping to $0x" + this.get_nn().toString(16).toUpperCase());
+                this.log("Jumping to $0x" + this.get_nn().toString(16).toUpperCase());
                 this.PC = this.get_nn();
             break;
             case "4":
@@ -129,7 +144,7 @@ class wap
             case "9":
                 if (!this.ZERO)
                 {
-                    console.log("Jumping to $0x" + this.get_nn().toString(16).toUpperCase());
+                    this.log("Jumping to $0x" + this.get_nn().toString(16).toUpperCase());
                     this.PC = this.get_nn();
                 }
                 else
@@ -151,7 +166,7 @@ class wap
             case "B":
                 if (!this.DATA)
                 {
-                    console.log("Jumping to $0x" + this.get_nn().toString(16).toUpperCase());
+                    this.log("Jumping to $0x" + this.get_nn().toString(16).toUpperCase());
                     this.PC = this.get_nn();
                 }
                 else
@@ -161,7 +176,7 @@ class wap
             case "C":
                 if (!this.CARRY)
                 {
-                    console.log("Jumping to $0x" + this.get_nn().toString(16).toUpperCase());
+                    this.log("Jumping to $0x" + this.get_nn().toString(16).toUpperCase());
                     this.PC = this.get_nn();
                 }
                 else

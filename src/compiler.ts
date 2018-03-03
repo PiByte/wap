@@ -4,17 +4,16 @@
 
 class compiler
 {
-    private insts: Array<string> = ["hlt", "lda", "sta", "jmp", "spc", "and", "or", "add", "sub", "jnz", "cmp", "jnd", "jnc", "rol", "ror", "clf"];    
-    private no_operand: Array<string> = ["0", "d", "e", "f"]; // commands that dont require an operand
+    private readonly insts: Array<string> = ["hlt", "lda", "sta", "jmp", "spc", "and", "or", "add", "sub", "jnz", "cmp", "jnd", "jnc", "rol", "ror", "clf"];    
+    private readonly no_operand: Array<string> = ["0", "d", "e", "f"]; // commands that dont require an operand
     
-    private address_prefix: string = "$";
-    private comment_prefix: string = ";";
+    private readonly address_prefix: string = "$";
+    private readonly comment_prefix: string = ";";
 
     private log(reason: string, location: string = "0", type: number = 3): void
     {
         switch (type)
         {
-            
             case 1: //Error
                 console.error("Compilation error at 0x" + location.toUpperCase() + " (" + reason + ")");
             break;
